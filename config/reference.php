@@ -689,7 +689,6 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *     },
  * }
  * @psalm-type AeaTechWebSnapshotProfilerXhprofConfig = array{
- *     is_profiling_enabled: bool, // Is profiling enabled
  *     app_version: scalar|null, // Application version will be displayed in xhgui
  *     xhgui: array{
  *         import_uri: scalar|null, // https://{login}:{password}@host/run/import

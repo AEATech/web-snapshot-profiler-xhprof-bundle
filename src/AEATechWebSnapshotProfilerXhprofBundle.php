@@ -18,8 +18,6 @@ use Xhgui\Profiler\Profiler;
 
 class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
 {
-    public const CONFIG_KEY_IS_PROFILING_ENABLED = 'is_profiling_enabled';
-
     public const CONFIG_KEY_APP_VERSION = 'app_version';
 
     public const CONFIG_KEY_XHGUI = 'xhgui';
@@ -75,10 +73,6 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
     {
         $definition->rootNode()
             ->children()
-                ->booleanNode(self::CONFIG_KEY_IS_PROFILING_ENABLED)
-                    ->isRequired()
-                    ->info('Is profiling enabled')
-                ->end()
                 ->scalarNode(self::CONFIG_KEY_APP_VERSION)
                     ->isRequired()
                     ->cannotBeEmpty()
@@ -205,18 +199,16 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
 
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
-        if ($config[self::CONFIG_KEY_IS_PROFILING_ENABLED]) {
-            $path = $this->getPath();
+        $path = $this->getPath();
 
-            $container->import($path . '/config/services.yaml');
+        $container->import($path . '/config/services.yaml');
 
-            $services = $container->services();
+        $services = $container->services();
 
-            $this->initFilter($config, $services, $container);
-            $this->initProfilerBackend($config, $services);
-            $this->initAdapter($config, $services);
-            $this->initEventMatcher($config, $services);
-        }
+        $this->initFilter($config, $services, $container);
+        $this->initProfilerBackend($config, $services);
+        $this->initAdapter($config, $services);
+        $this->initEventMatcher($config, $services);
     }
 
     /**
