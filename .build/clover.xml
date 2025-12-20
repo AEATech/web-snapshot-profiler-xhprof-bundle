@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1766242069">
-  <project timestamp="1766242069" name="Clover Coverage">
+<coverage generated="1766248215">
+  <project timestamp="1766248215" name="Clover Coverage">
     <package name="AEATech\WebSnapshotProfilerXhprofBundle">
       <file name="/app/src/AEATechWebSnapshotProfilerXhprofBundle.php">
         <class name="AEATech\WebSnapshotProfilerXhprofBundle\AEATechWebSnapshotProfilerXhprofBundle" namespace="AEATech\WebSnapshotProfilerXhprofBundle">
