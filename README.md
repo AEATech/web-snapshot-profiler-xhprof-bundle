@@ -29,7 +29,7 @@ return [
 ];
 ```
 
-## Installation
+## Configuration
 
 Symfony Flex generates a default configuration in config/packages/aea_tech_web_snapshot_profiler_xhprof.yaml
 
