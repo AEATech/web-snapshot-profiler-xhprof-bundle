@@ -61,7 +61,7 @@ aea_tech_web_snapshot_profiler_xhprof:
     ###
     event_matcher:
         # Enable/Disable all routes profiling
-        is_profile_all_routes: true
+        is_profile_all_routes: false
 
         # Enable profile if header was set (\AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\HeaderEventMatcher)
         header:
