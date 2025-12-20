@@ -35,6 +35,9 @@ Symfony Flex generates a default configuration in config/packages/aea_tech_web_s
 
 ```yaml
 aea_tech_web_snapshot_profiler_xhprof:
+    # Enable/Disable profiling
+    is_profiling_enabled: false
+
     # Application info for snapshot naming
     app_version: '0.0.1'
 

@@ -1,4 +1,6 @@
 aea_tech_web_snapshot_profiler_xhprof:
+    is_profiling_enabled: true
+
     ###
     # Application info for snapshot naming
     ###

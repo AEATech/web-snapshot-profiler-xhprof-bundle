@@ -1,5 +1,5 @@
 aea_tech_web_snapshot_profiler_xhprof:
-    is_profiling_enabled: true
+    is_profiling_enabled: false
 
     ###
     # Application info for snapshot naming
@@ -27,7 +27,7 @@ aea_tech_web_snapshot_profiler_xhprof:
     # Event matched configuration - START
     ###
     event_matcher:
-        is_profile_all_routes: true
+        is_profile_all_routes: false
 
         # Enable profile if header was set (\AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\HeaderEventMatcher)
         header:

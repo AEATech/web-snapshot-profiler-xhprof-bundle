@@ -46,6 +46,21 @@ class AEATechWebSnapshotProfilerXhprofBundleTest extends KernelTestCase
      * @return void
      */
     #[Test]
+    public function checkDisabledState(): void
+    {
+        self::bootKernel(['config' => static function (TestKernel $kernel): void {
+            $kernel->addTestConfig(__DIR__ . '/Fixtures/Resources/disabled.yaml');
+        }]);
+
+        $container = self::getContainer();
+
+        self::assertFalse($container->has(EventMatcher::class));
+    }
+
+    /**
+     * @return void
+     */
+    #[Test]
     public function checkEnabledWithoutEventMatchersState(): void
     {
         self::bootKernel(['config' => static function (TestKernel $kernel): void {
