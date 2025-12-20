@@ -5,16 +5,16 @@ services:
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
     Xhgui\Profiler\:
-        resource: '../vendor/perftools/php-profiler/src'
+        resource: '%kernel.project_dir%/vendor/perftools/php-profiler/src'
 
     AEATech\SnapshotProfilerXhprof\:
-        resource: '../vendor/aeatech/snapshot-profiler-xhprof/src/AEATech/SnapshotProfilerXhprof'
+        resource: '%kernel.project_dir%/vendor/aeatech/snapshot-profiler-xhprof/src/AEATech/SnapshotProfilerXhprof'
 
     AEATech\SnapshotProfiler\:
-        resource: '../vendor/aeatech/snapshot-profiler/src/AEATech/SnapshotProfiler'
+        resource: '%kernel.project_dir%/vendor/aeatech/snapshot-profiler/src/AEATech/SnapshotProfiler'
 
     AEATech\WebSnapshotProfilerEventSubscriber\:
-        resource: '../vendor/aeatech/web-snapshot-profiler-event-subscriber/src/AEATech/WebSnapshotProfilerEventSubscriber'
+        resource: '%kernel.project_dir%/vendor/aeatech/web-snapshot-profiler-event-subscriber/src/AEATech/WebSnapshotProfilerEventSubscriber'
     
     aea_tech_web_snapshot_profiler_xhprof.request_param_aware.route_event_matcher:
         class: AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\RouteEventMatcher
