@@ -1,0 +1,58 @@
+aea_tech_web_snapshot_profiler_xhprof:
+    is_profiling_enabled: true
+
+    ###
+    # Application info for snapshot naming
+    ###
+    app_version: '0.0.1'
+
+    ###
+    # XHGUI configuration
+    ###
+    xhgui:
+        import_uri: 'https://{login}:{password}@host/run/import'
+        import_timeout: 1
+
+    ###
+    # xhprof configuration
+    # - collect internal functions info
+    # - collect memory allocation info
+    ###
+    xhprof:
+        collect_additional_info: '1'
+        flags:
+            - !php/const Xhgui\Profiler\ProfilingFlags::MEMORY
+
+    ###
+    # Event matched configuration - START
+    ###
+    event_matcher:
+        is_profile_all_routes: false
+
+        # Enable profile if header was set (\AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\HeaderEventMatcher)
+        header:
+            is_enabled: false
+            name: 'x-profiling-header'
+            value: '1'
+
+        # Enable profile if request param was set and route matched (\AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\RequestParamAwareRouteEventMatcher)
+        request:
+            is_enabled: false
+            name: 'x-profile-request-param'
+            route_to_probability: []
+
+        # Enabled profile if route matched and probability happened
+        route:
+            is_enabled: true
+            route_to_probability:
+                # 1% probability to profile route
+                -
+                    route_name: 'app_route_name_to_profile_1_percent_requests'
+                    probability: 1
+                # 100% probability to profile route
+                -
+                    route_name: 'app_route_name_to_profile_every_request'
+                    probability: 100
+    ###
+    # Event matched configuration - END
+    ###
