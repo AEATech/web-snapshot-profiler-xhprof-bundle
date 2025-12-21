@@ -43,28 +43,31 @@ class AEATechWebSnapshotProfilerXhprofBundleTest extends KernelTestCase
     }
 
     /**
-     * @return void
+     * @return array
      */
-    #[Test]
-    public function checkDisabledState(): void
+    public static function checkDisabledStateDataProvider(): array
     {
-        self::bootKernel(['config' => static function (TestKernel $kernel): void {
-            $kernel->addTestConfig(__DIR__ . '/Fixtures/Resources/disabled.yaml');
-        }]);
-
-        $container = self::getContainer();
-
-        self::assertFalse($container->has(EventMatcher::class));
+        return [
+            'check disabled state' => [
+                'config' => __DIR__ . '/Fixtures/Resources/disabled.yaml',
+            ],
+            'check enabled without event matchers state' => [
+                'config' => __DIR__ . '/Fixtures/Resources/enabled_without_event_matchers.yaml',
+            ],
+        ];
     }
 
     /**
+     * @param string $config
+     *
      * @return void
      */
     #[Test]
-    public function checkEnabledWithoutEventMatchersState(): void
+    #[DataProvider('checkDisabledStateDataProvider')]
+    public function checkDisabledState(string $config): void
     {
-        self::bootKernel(['config' => static function (TestKernel $kernel): void {
-            $kernel->addTestConfig(__DIR__ . '/Fixtures/Resources/enabled_without_event_matchers.yaml');
+        self::bootKernel(['config' => static function (TestKernel $kernel) use ($config): void {
+            $kernel->addTestConfig($config);
         }]);
 
         $container = self::getContainer();
@@ -214,7 +217,9 @@ class AEATechWebSnapshotProfilerXhprofBundleTest extends KernelTestCase
         $reflectionProperty = new ReflectionProperty(EventMatcher::class, 'eventMatchers');
 
         $actualEventMatchers = [];
-        foreach ($reflectionProperty->getValue($container->get(EventMatcher::class)) as $innerEventMatcher) {
+
+        $eventMatcher = $container->get('aea_tech_web_snapshot_profiler_xhprof.event_matcher');
+        foreach ($reflectionProperty->getValue($eventMatcher) as $innerEventMatcher) {
             $actualEventMatchers[] = $innerEventMatcher;
         }
 

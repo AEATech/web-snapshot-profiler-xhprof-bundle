@@ -3,12 +3,6 @@ declare(strict_types=1);
 
 namespace AEATech\WebSnapshotProfilerXhprofBundle;
 
-use AEATech\SnapshotProfilerXhprof\Adapter;
-use AEATech\SnapshotProfilerXhprof\Filter;
-use AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\AllEventMatcher;
-use AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\HeaderEventMatcher;
-use AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\RequestParamAwareRouteEventMatcher;
-use AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\RouteEventMatcher;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -47,10 +41,21 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
     public const CONFIG_KEY_ROUTE_NAME = 'route_name';
     public const CONFIG_KEY_PROBABILITY = 'probability';
 
-    public const SERVICE_NAME_REQUEST_PARAM_AWARE_ROUTE_EVENT_MATCHER
-        = 'aea_tech_web_snapshot_profiler_xhprof.request_param_aware.route_event_matcher';
+    public const SERVICE_NAME_PROFILER_BACKEND = self::BUNDLE_NAME_PREFIX . 'profiler_backend';
+    public const SERVICE_NAME_FILTER = self::BUNDLE_NAME_PREFIX . 'filter';
+    public const SEVICE_NAME_ADAPTER = self::BUNDLE_NAME_PREFIX . 'adapter';
+    public const SERVICE_NAME_ALL_EVENT_MATCHER = self::EVENT_MATCHER_NAME_PREFIX . 'all';
+    public const SERVICE_NAME_HEADER_EVENT_MATCHER = self::EVENT_MATCHER_NAME_PREFIX . 'header';
+    public const SERVICE_NAME_REQUEST_PARAM_AWARE_ROUTE_EVENT_MATCHER_INNER = self::EVENT_MATCHER_NAME_PREFIX .
+        'request_param_aware.route_event.inner';
+    public const SERVICE_NAME_REQUEST_PARAM_AWARE_ROUTE_EVENT_MATCHER = self::EVENT_MATCHER_NAME_PREFIX .
+        'request_param_aware_route_event';
+    public const SERVICE_NAME_ROUTE_EVENT_MATCHER = self::EVENT_MATCHER_NAME_PREFIX . 'route';
 
-    public const TAG_EVENT_MATCHER = 'aeatech_web_snapshot_profiler_xhprof.event_matcher';
+    public const TAG_EVENT_MATCHER_ITEM = self::BUNDLE_NAME_PREFIX . 'event_matcher.item';
+
+    private const BUNDLE_NAME_PREFIX = 'aea_tech_web_snapshot_profiler_xhprof.';
+    private const EVENT_MATCHER_NAME_PREFIX = self::BUNDLE_NAME_PREFIX . 'event_matcher.';
 
     /**
      * @param array $routeToProbability
@@ -205,15 +210,16 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
 
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
+        $path = $this->getPath();
+
+        $container->import($path . '/config/services.yaml');
+
+        $services = $container->services();
+
+        $this->initProfilerBackend($config, $services);
+
         if ($config[self::CONFIG_KEY_IS_PROFILING_ENABLED]) {
-            $path = $this->getPath();
-
-            $container->import($path . '/config/services.yaml');
-
-            $services = $container->services();
-
             $this->initFilter($config, $services, $container);
-            $this->initProfilerBackend($config, $services);
             $this->initAdapter($config, $services);
             $this->initEventMatcher($config, $services);
         }
@@ -228,7 +234,7 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
      */
     private function initFilter(array $config, ServicesConfigurator $services,ContainerConfigurator $container): void
     {
-        $services->get(Filter::class)
+        $services->get(self::SERVICE_NAME_FILTER)
             ->arg('$version', $config[self::CONFIG_KEY_APP_VERSION])
             ->arg('$envServiceName', $container->env());
     }
@@ -252,7 +258,7 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
             ],
         ];
 
-        $services->get(Profiler::class)
+        $services->get(self::SERVICE_NAME_PROFILER_BACKEND)
             ->arg('$config', $profilerBackendConfig);
     }
 
@@ -269,7 +275,7 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
             'xhprof.collect_additional_info' => $xhprof[self::CONFIG_KEY_COLLECT_ADDITIONAL_INFO],
         ];
 
-        $services->get(Adapter::class)
+        $services->get(self::SEVICE_NAME_ADAPTER)
             ->arg('$iniSettings', $profilerAdapterConfig);
     }
 
@@ -293,7 +299,7 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
         }
 
         foreach ($taggedEventMatchers as $taggedEventMatcher) {
-            $taggedEventMatcher->tag(self::TAG_EVENT_MATCHER);
+            $taggedEventMatcher->tag(self::TAG_EVENT_MATCHER_ITEM);
         }
     }
 
@@ -305,7 +311,7 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
      */
     private function initAllEventMatcher(ServicesConfigurator $services, array &$taggedEventMatchers): void
     {
-        $taggedEventMatchers[] = $services->get(AllEventMatcher::class);
+        $taggedEventMatchers[] = $services->get(self::SERVICE_NAME_ALL_EVENT_MATCHER);
     }
 
     /**
@@ -323,7 +329,7 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
         $headerProfiling = $eventMatcher[self::CONFIG_KEY_HEADER];
 
         if ($headerProfiling[self::CONFIG_KEY_IS_ENABLED]) {
-            $headerEventMatcher = $services->get(HeaderEventMatcher::class);
+            $headerEventMatcher = $services->get(self::SERVICE_NAME_HEADER_EVENT_MATCHER);
             $headerEventMatcher->arg('$headerProfilingName', $headerProfiling[self::CONFIG_KEY_NAME])
                 ->arg('$headerProfilingValueEnabled', $headerProfiling[self::CONFIG_KEY_VALUE]);
 
@@ -349,10 +355,12 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
             $routeToRandProbability = $this->getRouteToRandProbability(
                 $requestProfiling[self::CONFIG_KEY_ROUTE_TO_PROBABILITY]
             );
-            $services->get(self::SERVICE_NAME_REQUEST_PARAM_AWARE_ROUTE_EVENT_MATCHER)
+            $services->get(self::SERVICE_NAME_REQUEST_PARAM_AWARE_ROUTE_EVENT_MATCHER_INNER)
                 ->arg('$routeToRandProbability', $routeToRandProbability);
 
-            $requestParamAwareRouteEventMatcher = $services->get(RequestParamAwareRouteEventMatcher::class);
+            $requestParamAwareRouteEventMatcher = $services->get(
+                self::SERVICE_NAME_REQUEST_PARAM_AWARE_ROUTE_EVENT_MATCHER
+            );
             $requestParamAwareRouteEventMatcher->arg('$requestParamName', $requestProfiling[self::CONFIG_KEY_NAME]);
 
             $taggedEventMatchers[] = $requestParamAwareRouteEventMatcher;
@@ -378,7 +386,7 @@ class AEATechWebSnapshotProfilerXhprofBundle extends AbstractBundle
                 $routeProfiling[self::CONFIG_KEY_ROUTE_TO_PROBABILITY]
             );
 
-            $routeEventMatcher = $services->get(RouteEventMatcher::class);
+            $routeEventMatcher = $services->get(self::SERVICE_NAME_ROUTE_EVENT_MATCHER);
             $routeEventMatcher->arg('$routeToRandProbability', $routeToRandProbability);
 
             $taggedEventMatchers[] = $routeEventMatcher;

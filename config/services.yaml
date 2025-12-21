@@ -3,34 +3,61 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-
-    Xhgui\Profiler\:
-        resource: '%kernel.project_dir%/vendor/perftools/php-profiler/src'
-
-    AEATech\SnapshotProfilerXhprof\:
-        resource: '%kernel.project_dir%/vendor/aeatech/snapshot-profiler-xhprof/src/AEATech/SnapshotProfilerXhprof'
-
-    AEATech\SnapshotProfiler\:
-        resource: '%kernel.project_dir%/vendor/aeatech/snapshot-profiler/src/AEATech/SnapshotProfiler'
-
-    AEATech\WebSnapshotProfilerEventSubscriber\:
-        resource: '%kernel.project_dir%/vendor/aeatech/web-snapshot-profiler-event-subscriber/src/AEATech/WebSnapshotProfilerEventSubscriber'
+        
+    aea_tech_web_snapshot_profiler_xhprof.profiler_backend:
+        class: Xhgui\Profiler\Profiler
+        
+    aea_tech_web_snapshot_profiler_xhprof.filter:
+        class: AEATech\SnapshotProfilerXhprof\Filter
+        arguments:
+            $version: ''
+            $envServiceName: ''
+        
+    aea_tech_web_snapshot_profiler_xhprof.saver:
+        class: AEATech\SnapshotProfilerXhprof\Saver
+        arguments:
+            $profiler: '@aea_tech_web_snapshot_profiler_xhprof.profiler_backend'
+            
+    aea_tech_web_snapshot_profiler_xhprof.adapter:
+        class: AEATech\SnapshotProfilerXhprof\Adapter
+        arguments:
+            $profiler: '@aea_tech_web_snapshot_profiler_xhprof.profiler_backend'
+            $iniSettings: []
+        
+    aea_tech_web_snapshot_profiler_xhprof.profiler:
+        class: AEATech\SnapshotProfiler\Profiler
+        arguments:
+            $adapter: '@aea_tech_web_snapshot_profiler_xhprof.adapter'
+        
+    aea_tech_web_snapshot_profiler_xhprof.event_matcher.all:
+        class: AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\AllEventMatcher
     
-    aea_tech_web_snapshot_profiler_xhprof.request_param_aware.route_event_matcher:
+    aea_tech_web_snapshot_profiler_xhprof.event_matcher.header:
+        class: AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\HeaderEventMatcher
+
+    aea_tech_web_snapshot_profiler_xhprof.event_matcher.request_param_aware.route_event.inner:
         class: AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\RouteEventMatcher
 
-    AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\RequestParamAwareRouteEventMatcher:
+    aea_tech_web_snapshot_profiler_xhprof.event_matcher.request_param_aware_route_event:
+        class: AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\RequestParamAwareRouteEventMatcher
         arguments:
-            $routeEventMatcher: '@aea_tech_web_snapshot_profiler_xhprof.request_param_aware.route_event_matcher'
+            $routeEventMatcher: '@aea_tech_web_snapshot_profiler_xhprof.event_matcher.request_param_aware.route_event.inner'
 
-    AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\EventMatcher:
+    aea_tech_web_snapshot_profiler_xhprof.event_matcher.route:
+        class: AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\RouteEventMatcher
+    
+    aea_tech_web_snapshot_profiler_xhprof.event_matcher:
+        class: AEATech\WebSnapshotProfilerEventSubscriber\EventMatcher\EventMatcher
         arguments:
-            $eventMatchers: !tagged_iterator aeatech_web_snapshot_profiler_xhprof.event_matcher
+            $eventMatchers: !tagged_iterator aea_tech_web_snapshot_profiler_xhprof.event_matcher.item
 
     AEATech\WebSnapshotProfilerXhprofBundle\OptionsFactory: ~
-    AEATech\WebSnapshotProfilerEventSubscriber\OptionsFactoryInterface: '@AEATech\WebSnapshotProfilerXhprofBundle\OptionsFactory'
-
-    AEATech\SnapshotProfilerContracts\ProfilerInterface: '@AEATech\SnapshotProfiler\Profiler'
-    AEATech\SnapshotProfilerContracts\FilterInterface: '@AEATech\SnapshotProfilerXhprof\Filter'
-    AEATech\SnapshotProfilerContracts\SaverInterface: '@AEATech\SnapshotProfilerXhprof\Saver'
-    AEATech\SnapshotProfilerContracts\AdapterInterface: '@AEATech\SnapshotProfilerXhprof\Adapter'
+    
+    aea_tech_web_snapshot_profiler_xhprof.event_subscriber:
+        class: AEATech\WebSnapshotProfilerEventSubscriber\EventSubscriber
+        arguments:
+            $eventMatcher: '@aea_tech_web_snapshot_profiler_xhprof.event_matcher'
+            $optionsFactory: '@AEATech\WebSnapshotProfilerXhprofBundle\OptionsFactory'
+            $profiler: '@aea_tech_web_snapshot_profiler_xhprof.profiler'
+            $filter: '@aea_tech_web_snapshot_profiler_xhprof.filter'
+            $saver: '@aea_tech_web_snapshot_profiler_xhprof.saver'
