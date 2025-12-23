@@ -20,6 +20,7 @@ composer require aeatech/web-snapshot-profiler-xhprof-bundle
 You can install it with custom recipe.
 
 ```bash
+composer config extra.symfony.allow-contrib true
 composer config --json --merge extra.symfony.endpoint '["https://api.github.com/repos/AEATech/recipes/contents/index.json?ref=main", "flex://defaults"]'
 composer require aeatech/web-snapshot-profiler-xhprof-bundle
 ```
